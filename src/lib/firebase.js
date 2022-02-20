@@ -1,10 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { FieldValue, getFirestore } from 'firebase/firestore';
-import {
-	getAuth,
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword,
-} from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 // import { seedDatabase } from '../seed';
 
@@ -25,11 +21,7 @@ const auth = getAuth();
 
 const firebase = {
 	db: db,
-	authentication: {
-		auth: auth,
-		signUp: createUserWithEmailAndPassword,
-		signIn: signInWithEmailAndPassword,
-	},
+	auth: auth,
 };
 
 // Call the seed file only once to populate firestore with data to get started with
