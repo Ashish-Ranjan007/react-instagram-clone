@@ -25,7 +25,7 @@ export default function Login() {
 		try {
 			// Log In user
 			await signInWithEmailAndPassword(firebase.auth, email, password);
-			navigate(ROUTES.DASHBOARD);
+			navigate(ROUTES.DASHBOARD, { replace: true });
 		} catch (error) {
 			setEmail('');
 			setPassword('');
