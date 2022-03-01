@@ -25,6 +25,21 @@ export async function doesUsernameExists(username) {
 	return result.length > 0 ? true : false;
 }
 
+export async function getUserByUsername(username) {
+	const result = [];
+	const colRef = collection(firebase.db, 'users');
+	const q = query(colRef, where('username', '==', username));
+	const querySnapshot = await getDocs(q);
+
+	querySnapshot.forEach((doc) => {
+		if (doc.data().username === username) {
+			result.push({ ...doc.data() });
+		}
+	});
+
+	return result.length > 0 ? result[0] : false;
+}
+
 export async function getUserByUserId(userId) {
 	const result = [];
 	const colRef = collection(firebase.db, 'users');
@@ -102,4 +117,19 @@ export async function getPhotos(userId, following) {
 	);
 
 	return photosWithUserDetails;
+}
+
+export async function getUserPhotosByUsername(username) {
+	const user = await getUserByUsername(username);
+
+	const result = [];
+	const colRef = collection(firebase.db, 'photos');
+	const q = query(colRef, where('userId', '==', user.uid));
+	const querySnapshot = await getDocs(q);
+
+	querySnapshot.forEach((doc) => {
+		result.push({ ...doc.data(), docId: doc.id });
+	});
+
+	return result;
 }
