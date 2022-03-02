@@ -10,7 +10,6 @@ function Profile() {
 	const navigate = useNavigate();
 	const { username } = useParams();
 	const [user, setUser] = useState(null);
-	const [userExists, setUserExists] = useState(false);
 
 	useEffect(() => {
 		async function checkUserExists() {
@@ -18,7 +17,6 @@ function Profile() {
 
 			if (userObject) {
 				setUser(userObject);
-				setUserExists(true);
 			} else {
 				navigate(ROUTES.NOT_FOUND);
 			}
@@ -27,11 +25,11 @@ function Profile() {
 		checkUserExists();
 	}, [username]);
 
-	return userExists ? (
+	return user ? (
 		<div className="bg-gray-background">
 			<Header />
 			<div className="mx-auto max-w-screen-lg">
-				<UserProfile username={username} />
+				<UserProfile user={user} />
 			</div>
 		</div>
 	) : null;

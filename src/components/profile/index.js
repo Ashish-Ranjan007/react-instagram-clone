@@ -1,20 +1,18 @@
 import Proptypes from 'prop-types';
 import { useEffect, useReducer } from 'react';
 
+import Photos from './Photos';
 import Header from './Header';
-import {
-	getUserPhotosByUsername,
-	getUserByUsername,
-} from '../../services/firebase';
+import { getUserPhotosByUserId } from '../../services/firebase';
 
 const reducer = (state, newState) => ({ ...state, ...newState });
 const initialState = {
 	profile: {},
-	photosCollection: {},
+	photosCollection: [],
 	followerCount: 0,
 };
 
-export default function Profile({ username }) {
+export default function Profile({ user }) {
 	const [{ profile, photosCollection, followerCount }, dispatch] = useReducer(
 		reducer,
 		initialState
@@ -22,28 +20,33 @@ export default function Profile({ username }) {
 
 	useEffect(() => {
 		async function getProfileInfoAndPhotos() {
-			const userObject = await getUserByUsername(username);
-			const photos = await getUserPhotosByUsername(username);
+			const photos = await getUserPhotosByUserId(user.userId);
 
 			dispatch({
-				profile: userObject,
+				profile: user,
 				photosCollection: photos,
-				followerCount: userObject.followers.length,
+				followerCount: user.followers.length,
 			});
 		}
 
-		if (username) {
+		if (user) {
 			getProfileInfoAndPhotos();
 		}
-	}, [username]);
+	}, [user.username]);
 
 	return (
 		<>
-			<Header />
+			<Header
+				photosCount={photosCollection ? photosCollection.length : 0}
+				profile={profile}
+				followerCount={followerCount}
+				setFollowerCount={dispatch}
+			/>
+			<Photos photos={photosCollection} />
 		</>
 	);
 }
 
 Profile.propTypes = {
-	username: Proptypes.string,
+	user: Proptypes.object,
 };

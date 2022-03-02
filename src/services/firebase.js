@@ -7,6 +7,7 @@ import {
 	doc,
 	updateDoc,
 	arrayUnion,
+	arrayRemove,
 } from 'firebase/firestore';
 import { firebase } from '../lib/firebase';
 
@@ -33,7 +34,7 @@ export async function getUserByUsername(username) {
 
 	querySnapshot.forEach((doc) => {
 		if (doc.data().username === username) {
-			result.push({ ...doc.data() });
+			result.push({ ...doc.data(), docId: doc.id });
 		}
 	});
 
@@ -74,19 +75,31 @@ export async function getSuggestedProfiles(userId, following) {
 	return result;
 }
 
-export async function updateCurrentUserFollowing(currentUserDocId, profileId) {
+export async function updateCurrentUserFollowing(
+	currentUserDocId,
+	profileId,
+	isFollowingProfile
+) {
 	const docRef = doc(firebase.db, 'users', currentUserDocId);
 
 	await updateDoc(docRef, {
-		following: arrayUnion(profileId),
+		following: isFollowingProfile
+			? arrayRemove(profileId)
+			: arrayUnion(profileId),
 	});
 }
 
-export async function updateFollowedUserFollowers(userDocId, currentUserId) {
+export async function updateFollowedUserFollowers(
+	userDocId,
+	currentUserId,
+	isFollowingProfile
+) {
 	const docRef = doc(firebase.db, 'users', userDocId);
 
 	await updateDoc(docRef, {
-		followers: arrayUnion(currentUserId),
+		followers: isFollowingProfile
+			? arrayRemove(currentUserId)
+			: arrayUnion(currentUserId),
 	});
 }
 
@@ -119,12 +132,10 @@ export async function getPhotos(userId, following) {
 	return photosWithUserDetails;
 }
 
-export async function getUserPhotosByUsername(username) {
-	const user = await getUserByUsername(username);
-
+export async function getUserPhotosByUserId(userId) {
 	const result = [];
 	const colRef = collection(firebase.db, 'photos');
-	const q = query(colRef, where('userId', '==', user.uid));
+	const q = query(colRef, where('userId', '==', userId));
 	const querySnapshot = await getDocs(q);
 
 	querySnapshot.forEach((doc) => {
@@ -132,4 +143,40 @@ export async function getUserPhotosByUsername(username) {
 	});
 
 	return result;
+}
+
+export async function isUserFollowingProfile(username, profileUserId) {
+	const result = [];
+	const colRef = collection(firebase.db, 'users');
+	const q = query(
+		colRef,
+		where('username', '==', username),
+		where('following', 'array-contains', profileUserId)
+	);
+	const querySnapshot = await getDocs(q);
+
+	querySnapshot.forEach((doc) => {
+		result.push({ ...doc.data(), docId: doc.id });
+	});
+
+	return result.length > 0 ? true : false;
+}
+
+export async function toggleFollow(
+	isFollowingProfile,
+	activeUserDocId,
+	profileDocId,
+	profileUserId,
+	followingUserId
+) {
+	await updateCurrentUserFollowing(
+		activeUserDocId,
+		profileUserId,
+		isFollowingProfile
+	);
+	await updateFollowedUserFollowers(
+		profileDocId,
+		followingUserId,
+		isFollowingProfile
+	);
 }
