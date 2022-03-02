@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 
+import Header from '../components/Header';
+
 function NotFound() {
 	useEffect(() => {
 		document.title = 'Not Found!';
@@ -7,6 +9,7 @@ function NotFound() {
 
 	return (
 		<div className="bg-gray-background">
+			<Header />
 			<div className="mx-auth max-w-screen-lg">
 				<p className="text-center text-2xl">Not Found!</p>
 			</div>
